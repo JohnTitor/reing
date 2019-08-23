@@ -2,11 +2,11 @@
 
 pub mod schema;
 
-use self::schema::{questions, answers};
+use self::schema::{answers, questions};
 use chrono::prelude::*;
 
 #[derive(Insertable)]
-#[table_name="questions"]
+#[table_name = "questions"]
 pub struct NewQuestion {
     pub ip_address: String,
     pub body: String,
@@ -32,7 +32,7 @@ pub struct QuestionForm {
 }
 
 #[derive(Insertable)]
-#[table_name="answers"]
+#[table_name = "answers"]
 pub struct NewAnswer {
     pub question_id: i32,
     pub body: String,

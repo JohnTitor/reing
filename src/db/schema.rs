@@ -19,7 +19,4 @@ table! {
 
 joinable!(answers -> questions (question_id));
 
-allow_tables_to_appear_in_same_query!(
-    answers,
-    questions,
-);
+allow_tables_to_appear_in_same_query!(answers, questions,);

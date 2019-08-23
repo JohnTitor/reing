@@ -1,4 +1,4 @@
-use rocket::{response, request};
+use rocket::{request, response};
 
 pub mod guard;
 
