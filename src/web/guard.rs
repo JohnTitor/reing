@@ -51,7 +51,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ClientIP {
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
         let ip_address = match request.remote() {
             Some(ip_address) => format!("{}", ip_address),
-            None => String::from(""),
+            None => String::new(),
         };
         Outcome::Success(ClientIP(ip_address))
     }
@@ -90,7 +90,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for ForceSSL {
 
     fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
         if let Some(schema) = request.headers().get("X-Forwarded-Proto").next() {
-            if schema == String::from("http") {
+            if schema == "http" {
                 return Outcome::Success(ForceSSL());
             }
         }

@@ -103,7 +103,7 @@ fn files(file: PathBuf) -> Result<web::CachedFile, status::NotFound<String>> {
     let path = Path::new("static/").join(file);
     response::NamedFile::open(&path)
         .map_err(|_| status::NotFound(format!("Bad path: {:?}", path)))
-        .map(|nf| web::CachedFile(nf))
+        .map(web::CachedFile)
 }
 
 /* GET / */
@@ -139,7 +139,8 @@ fn next_prev_page(current_page: i64) -> (Option<i64>, Option<i64>) {
     } else {
         Some(current_page - 1)
     };
-    return (next_page, prev_page);
+
+    (next_page, prev_page)
 }
 
 const ANSWER_COUNT_PER_PAGE: i64 = 30;
@@ -159,7 +160,7 @@ fn index_with_page(
     let answer_dtos = repo
         .answers(offset, ANSWER_COUNT_PER_PAGE)
         .into_iter()
-        .map(|a| AnswerDTO::from(a))
+        .map(AnswerDTO::from)
         .collect::<Vec<_>>();
     let (next_page, prev_page) = next_prev_page(page);
     let context = IndexDTO {
@@ -169,8 +170,8 @@ fn index_with_page(
         },
         answers: answer_dtos,
         site_url: format!("https://{}/", env::var("APPLICATION_DOMAIN").unwrap()),
-        prev_page: prev_page,
-        next_page: next_page,
+        prev_page,
+        next_page,
     };
     Template::render("index", &context)
 }
@@ -188,7 +189,7 @@ fn search(repo: web::guard::Repository, profile: State<UserProfile>, query: Stri
     let answer_dtos = repo
         .search_answers(query.clone())
         .into_iter()
-        .map(|a| AnswerDTO::from(a))
+        .map(AnswerDTO::from)
         .collect::<Vec<_>>();
     let context = SearchDTO {
         profile: ProfileDTO {
@@ -197,7 +198,7 @@ fn search(repo: web::guard::Repository, profile: State<UserProfile>, query: Stri
         },
         search_results: answer_dtos,
         site_url: format!("https://{}/", env::var("APPLICATION_DOMAIN").unwrap()),
-        query: query,
+        query,
     };
     Template::render("search", &context)
 }
@@ -286,7 +287,8 @@ fn show_question(
 fn show_answer(_answer_id: i32, app_env: State<AppEnvironment>) -> Template {
     let mut context: HashMap<String, bool> = HashMap::new();
     context.insert(String::from("is_production"), app_env.is_production);
-    return Template::render("answer/show", &context);
+
+    Template::render("answer/show", &context)
 }
 
 #[get("/api/answer/<answer_id>")]
@@ -299,13 +301,13 @@ fn show_answer_json(
         let prev_answer_opt = repo.find_prev_answer(answer.created_at);
         let context = ShowAnswerDTO {
             answer: AnswerDTO::from(answer),
-            next_answer: next_answer_opt.map(|a| AnswerDTO::from(a)),
-            prev_answer: prev_answer_opt.map(|a| AnswerDTO::from(a)),
+            next_answer: next_answer_opt.map(AnswerDTO::from),
+            prev_answer: prev_answer_opt.map(AnswerDTO::from),
         };
         return Ok(Json(context));
     }
 
-    return Err(status::NotFound("not found"));
+    Err(status::NotFound("not found"))
 }
 
 /* GET /admin */
@@ -321,7 +323,7 @@ fn admin_index(repo: web::guard::Repository, _auth: web::guard::BasicAuth) -> Te
         .not_answered_questions()
         .into_iter()
         .filter(|q| !q.hidden)
-        .map(|q| QuestionDTO::from(q))
+        .map(QuestionDTO::from)
         .collect::<Vec<_>>();
     let context = AdminIndexDTO {
         questions: question_dtos,

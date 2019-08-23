@@ -40,9 +40,7 @@ pub enum StoreQuestionError {
 
 impl Repository {
     pub fn new(pooled_connection: DieselConnection) -> Self {
-        Self {
-            pooled_connection: pooled_connection,
-        }
+        Self { pooled_connection }
     }
 
     fn conn(&self) -> &diesel::PgConnection {
@@ -54,13 +52,10 @@ impl Repository {
         body: String,
         ip_address: String,
     ) -> Result<Question, StoreQuestionError> {
-        if body.chars().all(|c| char::is_whitespace(c)) {
+        if body.chars().all(char::is_whitespace) {
             Err(StoreQuestionError::BlankBody)
         } else {
-            let new_question = db::NewQuestion {
-                body: body,
-                ip_address: ip_address,
-            };
+            let new_question = db::NewQuestion { body, ip_address };
 
             let q: db::Question = diesel::insert_into(questions::table)
                 .values(&new_question)
@@ -75,7 +70,7 @@ impl Repository {
             // question_idのquestionが存在することを確認
             let new_answer = db::NewAnswer {
                 question_id: question.id,
-                body: body,
+                body,
             };
             let a: db::Answer = diesel::insert_into(answers::table)
                 .values(&new_answer)
